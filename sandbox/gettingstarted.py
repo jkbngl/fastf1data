@@ -1,35 +1,95 @@
 import fastf1
 from fastf1 import plotting
-from matplotlib import pyplot as plt
 import os
+import plotly.express as px
+import pandas as pd
+
+
+team_color_map = {
+    "Red Bull Racing": "blue",
+    "Aston Martin": "green",
+    "Ferrari": "red",
+    "Mercedes": "mediumturquoise",
+    "Alfa Romeo": "darkred",
+    "Apline": "deeppink",
+    "Williams": "lightblue",
+    "AlphaTauri": "blueviolet",
+    "Haas F1 Team": "White",
+    "McLaren": "orange",
+}
+
+
+def get_laps():
+    # lec_laps = race.laps.pick_driver('LEC')
+    # lap = race.laps.pick_fastest()
+
+    # [ 'Time', 'DriverNumber', 'LapTime', 'LapNumber', 'PitOutTime', 'PitInTime'
+    # , 'Sector1Time', 'Sector2Time', 'Sector3Time', 'Sector1SessionTime', 'Sector2SessionTime', 'Sector3SessionTime'
+    # , 'SpeedI1', 'SpeedI2', 'SpeedFL', 'SpeedST', 'IsPersonalBest', 'Compound', 'TyreLife', 'FreshTyre', 'Stint', 'LapStartTime', 'Team', 'Driver', 'TrackStatus', 'IsAccurate', 'LapStartDate']
+    return race.laps
+
+
+def get_pos_data():
+    pos_data = race.pos_data
+    print(pos_data)
+    # ['Date', 'Status', 'X', 'Y', 'Z', 'Source', 'Time', 'SessionTime']
+    print(pos_data['44'].keys())
+
+
+def get_tel_data(lap):
+    # ['Date', 'SessionTime', 'DriverAhead', 'DistanceToDriverAhead', 'Time', 'RPM', 'Speed', 'nGear', 'Throttle', 'Brake', 'DRS', 'Source', 'Distance', 'RelativeDistance', 'Status', 'X', 'Y', 'Z']
+    return lap.get_telemetry()
 
 
 cache_dir = f'{os.getcwd()}\cache'
 
-print("cache_dir: ", cache_dir)
-
 plotting.setup_mpl()
 
-# optional but recommended
 fastf1.Cache.enable_cache('H:/projects/fastf1data/sandbox/cache')
 
 race = fastf1.get_session(2023, 'Bahrin Grand Prix', 'R')
 race.load()
 
-# lec_laps = race.laps.pick_driver('LEC')
 
-pos_data = race.pos_data
-print(pos_data)
-# ['Date', 'Status', 'X', 'Y', 'Z', 'Source', 'Time', 'SessionTime']
-print(pos_data['44'].keys())
+lap_data = get_laps()
 
 
-lap = race.laps.pick_fastest()
-tel = lap.get_telemetry()
+drivers = pd.DataFrame(columns=['driver', 'maxspeed', 'minspeed', 'lapnuber'])
+
+print(lap_data.columns)
+
+for index, row in lap_data.iterrows():
+    print(f"{index} / {len(lap_data.index)}")
+
+    tel_data = get_tel_data(row)
+
+    drivers = drivers.append({
+        'driver': row['Driver'],
+        'maxspeed': tel_data['Speed'].max(),
+        'minspeed': tel_data['Speed'].min(),
+        'lapnuber': row['LapNumber'],
+        'team': row['Team'],
+    }, ignore_index=True)
+
+    # print(f"{row['Driver']} - {row['LapNumber']} ({row['TyreLife']})")
+    # print(f"maxspeed: ", tel_data['Speed'].max())
+    # print(f"minspeed: ", tel_data['Speed'].min())
+    # print(f"Throttle max: ", tel_data['Throttle'].max())
+    # print(f"Throttle min: ", tel_data['Throttle'].min())
+    # print(f"Throttle mean: ", tel_data['Throttle'].mean())
+
+print(drivers)
+
+fig = px.box(drivers, x="driver", y="maxspeed", boxmode="overlay",
+             color="team", color_discrete_map=team_color_map)
+fig.show()
 
 
-print(tel)
-print(tel.columns)
+# all_laps.groupby(['Col1'])[Col2].max()
+
+# print(tel_data)
+# print(len(tel_data.index))
+# print(tel_data.columns)
 
 """
 [
