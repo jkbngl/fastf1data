@@ -53,6 +53,7 @@ race.load()
 
 lap_data = get_laps()
 
+laps = {}
 
 drivers = pd.DataFrame(columns=['driver', 'maxspeed', 'minspeed', 'lapnuber'])
 
@@ -68,6 +69,7 @@ for index, row in lap_data.iterrows():
         'maxspeed': tel_data['Speed'].max(),
         'minspeed': tel_data['Speed'].min(),
         'lapnuber': row['LapNumber'],
+        'laptime': row['LapTime'].total_seconds(),
         'team': row['Team'],
     }, ignore_index=True)
 
@@ -80,7 +82,8 @@ for index, row in lap_data.iterrows():
 
 print(drivers)
 
-fig = px.box(drivers, x="driver", y="maxspeed", boxmode="overlay",
+# maxspeed, laptime
+fig = px.box(drivers, x="driver", y="laptime", boxmode="overlay",
              color="team", color_discrete_map=team_color_map)
 fig.show()
 
