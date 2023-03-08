@@ -53,25 +53,24 @@ race.load()
 
 lap_data = get_laps()
 
-laps = {}
-
-drivers = pd.DataFrame(columns=['driver', 'maxspeed', 'minspeed', 'lapnuber'])
+drivers = pd.DataFrame(columns=['driver', 'maxspeed', 'minspeed', 'lapnumber'])
 
 print(lap_data.columns)
 
 for index, row in lap_data.iterrows():
-    print(f"{index} / {len(lap_data.index)}")
+    print(f"{index} / {len(lap_data.index)} ({row['Driver']})")
 
-    tel_data = get_tel_data(row)
+    if row['Team'] == 'Ferrari':
+        tel_data = get_tel_data(row)
 
-    drivers = drivers.append({
-        'driver': row['Driver'],
-        'maxspeed': tel_data['Speed'].max(),
-        'minspeed': tel_data['Speed'].min(),
-        'lapnuber': row['LapNumber'],
-        'laptime': row['LapTime'].total_seconds(),
-        'team': row['Team'],
-    }, ignore_index=True)
+        drivers = drivers.append({
+            'driver': row['Driver'],
+            'maxspeed': tel_data['Speed'].max(),
+            'minspeed': tel_data['Speed'].min(),
+            'lapnumber': row['LapNumber'],
+            'laptime': row['LapTime'].total_seconds(),
+            'team': row['Team'],
+        }, ignore_index=True)
 
     # print(f"{row['Driver']} - {row['LapNumber']} ({row['TyreLife']})")
     # print(f"maxspeed: ", tel_data['Speed'].max())
@@ -83,8 +82,13 @@ for index, row in lap_data.iterrows():
 print(drivers)
 
 # maxspeed, laptime
-fig = px.box(drivers, x="driver", y="laptime", boxmode="overlay",
-             color="team", color_discrete_map=team_color_map)
+# fig = px.box(drivers, x="driver", y="laptime", boxmode="overlay",
+#              color="team", color_discrete_map=team_color_map)
+# fig.show()
+
+
+fig = px.line(drivers, x="lapnumber", y="laptime",
+              color='driver', title='Laptime')
 fig.show()
 
 
