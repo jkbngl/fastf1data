@@ -47,7 +47,7 @@ plotting.setup_mpl()
 
 fastf1.Cache.enable_cache('H:/projects/fastf1data/sandbox/cache')
 
-race = fastf1.get_session(2023, 'Bahrin Grand Prix', 'R')
+race = fastf1.get_session(2023, 'Saudi Grand Prix', 'R')
 race.load()
 
 
